@@ -1,0 +1,82 @@
+# CI: lint, tests, then the evaluation gate. A prompt, routing, tool or policy change that
+# drops any golden-set metric below config/thresholds.yaml fails this workflow and the PR
+# cannot merge (branch protection requires "eval-gate").
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e ".[dev]"
+      - run: ruff check src tests
+      - run: pytest -q
+
+  eval-gate:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      AGENTGATE_MODE: local          # offline, deterministic. Set to aws (with OIDC below) for a real-model run on main.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e ".[dev]"
+      - name: Restore last green baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: .evals/baseline
+          key: eval-baseline-${{ github.base_ref || 'main' }}
+      - name: Run evaluation gate
+        id: evals
+        run: |
+          set +e
+          agentgate-eval --report .evals/latest --baseline .evals/baseline/report.json
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: .evals/latest/report.md
+      - name: Fail if gate is red
+        if: steps.evals.outputs.exit != '0'
+        run: echo "evaluation gate failed; see the PR comment" && exit 1
+      - name: Save new baseline (main only)
+        if: github.ref == 'refs/heads/main'
+        run: mkdir -p .evals/baseline && cp .evals/latest/report.json .evals/baseline/report.json
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: .evals/baseline
+          key: eval-baseline-main-${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        with: { name: eval-report, path: .evals/latest }
+
+  policy-tests:
+    # Cedar policies are deterministic: 100% decision accuracy or the PR is wrong. Runs in parallel for a fast signal.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e ".[dev]"
+      - run: agentgate-eval --suite policy
+
+  terraform-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.9.5" }
+      - run: terraform fmt -check -recursive infra/terraform
+      - run: cd infra/terraform/envs/dev && terraform init -backend=false && terraform validate

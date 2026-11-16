@@ -1,0 +1,42 @@
+# Capability routing. Callers ask for a capability, never a model.
+# Changing a route is a PR that must pass the eval gate (evals/golden + thresholds.yaml).
+#
+# Prices are USD per 1K tokens (Bedrock ap-south-1 / us-east-1 list prices at time of writing;
+# update in a reviewed PR, never hard-code in Python).
+
+models:
+  haiku:
+    model_id: "anthropic.claude-3-5-haiku-20241022-v1:0"
+    tier: fast
+    price_in_per_1k: 0.0008
+    price_out_per_1k: 0.004
+    max_output_tokens: 1024
+    supports_tools: true
+  sonnet:
+    model_id: "anthropic.claude-3-7-sonnet-20250219-v1:0"
+    tier: strong
+    price_in_per_1k: 0.003
+    price_out_per_1k: 0.015
+    max_output_tokens: 2048
+    supports_tools: true
+  nova-micro:
+    model_id: "amazon.nova-micro-v1:0"
+    tier: cheap
+    price_in_per_1k: 0.000035
+    price_out_per_1k: 0.00014
+    max_output_tokens: 1024
+    supports_tools: false
+
+capabilities:
+  # name:            primary model, fallback, whether semantic cache applies, temperature
+  classify:         { model: nova-micro, fallback: haiku,  cache: true,  temperature: 0.0, prompt_version: v3 }
+  extract_json:     { model: haiku,      fallback: sonnet, cache: true,  temperature: 0.0, prompt_version: v2 }
+  summarize:        { model: haiku,      fallback: sonnet, cache: true,  temperature: 0.2, prompt_version: v2 }
+  propose_action:   { model: sonnet,     fallback: haiku,  cache: false, temperature: 0.0, prompt_version: v4 }
+  answer_grounded:  { model: haiku,      fallback: sonnet, cache: true,  temperature: 0.0, prompt_version: v5 }
+  judge:            { model: haiku,      fallback: haiku,  cache: false, temperature: 0.0, prompt_version: v1 }
+
+# Escalation rules: if the primary returns invalid JSON against a schema, retry once on the fallback.
+escalation:
+  on_schema_failure: fallback
+  max_retries: 1

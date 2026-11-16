@@ -1,0 +1,4 @@
+# Lowering an eval threshold or changing policy needs a second pair of eyes.
+config/thresholds.yaml   @amol-jadhav-aws
+policies/                @amol-jadhav-aws
+config/budgets.yaml      @amol-jadhav-aws

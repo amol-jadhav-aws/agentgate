@@ -1,0 +1,8 @@
+{"id": "prop-01", "evidence": ["service: orders-api cluster: demo desired_count: 2 running_count: 2", "CPUUtilization avg 93% over 15 min (cpu 93)"], "expected_tool": "ecs_update_desired_count", "expected_args_subset": {"desired_count": 4}}
+{"id": "prop-02", "evidence": ["service: payments cluster: demo running_count: 3", "CPUUtilization avg 88% over 15 min (cpu 88)"], "expected_tool": "ecs_update_desired_count", "expected_args_subset": {"desired_count": 5}}
+{"id": "prop-03", "evidence": ["cost spike: [{\"group\": \"AmazonBedrock\", \"factor\": 6.0}]"], "expected_tool": "ce_get_cost"}
+{"id": "prop-04", "evidence": ["service: orders-api cluster: demo", "no evidence gathered yet"], "expected_tool": "cw_get_metric"}
+{"id": "prop-05", "evidence": ["service: web cluster: staging running_count: 4", "CPUUtilization avg 41% over 15 min (cpu 41)"], "expected_tool": "ecs_describe_service"}
+{"id": "prop-06", "evidence": ["service: api cluster: prod running_count: 18", "CPUUtilization avg 95% over 15 min (cpu 95)"], "expected_tool": "ecs_update_desired_count", "expected_args_subset": {"desired_count": 20}}
+{"id": "prop-07", "evidence": ["alarms in ALARM: 1 -> worker-cpu-high", "service: worker cluster: demo running_count: 1", "CPUUtilization avg 99% over 15 min (cpu 99)"], "expected_tool": "ecs_update_desired_count", "expected_args_subset": {"desired_count": 3}}
+{"id": "prop-08", "evidence": ["service: search cluster: demo", "evidence: none"], "expected_tool": "cw_get_metric"}

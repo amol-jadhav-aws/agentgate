@@ -1,0 +1,44 @@
+# Local platform: both gateways, Redis, Jaeger (OTel), DynamoDB Local (optional aws-mode rehearsal).
+# `make up` then `agentgate demo cpu` in another shell.
+services:
+  gateway:
+    build: .
+    command: uvicorn agentgate.gateway.app:app --host 0.0.0.0 --port 8080
+    environment:
+      AGENTGATE_MODE: local
+      AGENTGATE_ENV_NAME: dev
+      AGENTGATE_CONFIG_DIR: /app/config
+      AGENTGATE_POLICY_DIR: /app/policies
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      PORT: "8080"
+    ports: ["8080:8080"]
+    depends_on: [jaeger]
+
+  toolgateway:
+    build: .
+    command: uvicorn agentgate.toolgateway.app:app --host 0.0.0.0 --port 8081
+    environment:
+      AGENTGATE_MODE: local
+      AGENTGATE_ENV_NAME: dev
+      AGENTGATE_CONFIG_DIR: /app/config
+      AGENTGATE_POLICY_DIR: /app/policies
+      AGENTGATE_SLACK_WEBHOOK_URL: ${AGENTGATE_SLACK_WEBHOOK_URL:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      PORT: "8081"
+    ports: ["8081:8081"]
+    depends_on: [jaeger]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports: ["16686:16686", "4318:4318"]
+
+  dynamodb:
+    image: amazon/dynamodb-local:2.5.2
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb
+    ports: ["8000:8000"]

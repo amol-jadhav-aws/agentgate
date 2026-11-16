@@ -1,0 +1,12 @@
+{"id": "cls-01", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "CPUUtilization on orders-api has been above 85% for 20 minutes", "expected": "cpu_saturation"}
+{"id": "cls-02", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Tasks are getting OOM killed, memory at 97%", "expected": "memory_pressure"}
+{"id": "cls-03", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Daily spend doubled since yesterday, budget alert fired", "expected": "cost_anomaly"}
+{"id": "cls-04", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Deployment rollout stuck, new tasks in crashloop", "expected": "deploy_failure"}
+{"id": "cls-05", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "p99 latency climbed to 4s, requests timing out", "expected": "latency"}
+{"id": "cls-06", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Someone asked how the weather is", "expected": "unknown"}
+{"id": "cls-07", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "ECS service throttled, CPU pegged", "expected": "cpu_saturation"}
+{"id": "cls-08", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "AWS bill looks wrong this month", "expected": "cost_anomaly"}
+{"id": "cls-09", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Out of memory errors in container logs", "expected": "memory_pressure"}
+{"id": "cls-10", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Task failed to start after the latest deploy", "expected": "deploy_failure"}
+{"id": "cls-11", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Requests are slow and timing out at the ALB", "expected": "latency"}
+{"id": "cls-12", "labels": "cpu_saturation, memory_pressure, cost_anomaly, deploy_failure, latency, unknown", "text": "Nothing specific, just checking in", "expected": "unknown"}

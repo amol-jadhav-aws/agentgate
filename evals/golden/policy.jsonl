@@ -1,0 +1,12 @@
+{"id": "pol-01", "tenant": "ops-agent", "tool": "cw_describe_alarms", "args": {"state": "ALARM"}, "expected": "allow"}
+{"id": "pol-02", "tenant": "ops-agent", "tool": "ecs_update_desired_count", "args": {"cluster": "demo", "service": "orders-api", "desired_count": 4}, "current_state": {"current_count": 2}, "expected": "approve"}
+{"id": "pol-03", "tenant": "ops-agent", "tool": "ecs_update_desired_count", "args": {"cluster": "demo", "service": "orders-api", "desired_count": 4}, "current_state": {"current_count": 2}, "approved": true, "approver_count": 1, "expected": "allow"}
+{"id": "pol-04", "tenant": "ops-agent", "tool": "ecs_update_desired_count", "args": {"cluster": "demo", "service": "orders-api", "desired_count": 12}, "current_state": {"current_count": 2}, "expected": "deny"}
+{"id": "pol-05", "tenant": "ops-agent", "tool": "ecs_delete_service", "args": {"cluster": "demo", "service": "orders-api"}, "expected": "deny"}
+{"id": "pol-06", "tenant": "knowledge-agent", "tool": "cw_describe_alarms", "args": {"state": "ALARM"}, "expected": "deny"}
+{"id": "pol-07", "tenant": "knowledge-agent", "tool": "kb_search", "args": {"query": "approval window"}, "expected": "allow"}
+{"id": "pol-08", "tenant": "cli", "tool": "ecs_delete_service", "args": {"cluster": "demo", "service": "x"}, "approved": true, "approver_count": 2, "expected": "allow"}
+{"id": "pol-09", "tenant": "cli", "tool": "ecs_delete_service", "args": {"cluster": "demo", "service": "x"}, "approved": true, "approver_count": 1, "expected": "approve"}
+{"id": "pol-10", "tenant": "cli", "tool": "ecs_delete_service", "args": {"cluster": "demo", "service": "x"}, "env": "prod", "approved": true, "approver_count": 2, "expected": "deny"}
+{"id": "pol-11", "tenant": "ops-agent", "tool": "ecs_update_desired_count", "args": {"cluster": "demo", "service": "orders-api", "desired_count": 0}, "env": "prod", "current_state": {"current_count": 2}, "expected": "deny"}
+{"id": "pol-12", "tenant": "ops-agent", "tool": "ce_get_cost", "args": {"days": 7, "group_by": "SERVICE"}, "expected": "allow"}

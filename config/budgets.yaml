@@ -1,0 +1,25 @@
+# Token budgets per tenant. A tenant is an agent or a team that calls the gateway.
+# Checked atomically before every model call; a refused call costs nothing.
+default_monthly_usd: 5.00
+
+tenants:
+  ops-agent:
+    monthly_usd: 15.00
+    per_run_usd: 0.60
+    owner: platform
+    cost_center: CC-OPS-001
+  knowledge-agent:
+    monthly_usd: 10.00
+    per_run_usd: 0.25
+    owner: platform
+    cost_center: CC-KB-001
+  cli:
+    monthly_usd: 5.00
+    per_run_usd: 0.50
+    owner: platform
+    cost_center: CC-DEV-001
+  evals:
+    monthly_usd: 8.00
+    per_run_usd: 2.00
+    owner: platform
+    cost_center: CC-CI-001

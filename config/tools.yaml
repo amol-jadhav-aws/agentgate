@@ -1,0 +1,122 @@
+# Tool manifest. A tool that is not listed here does not exist to any agent.
+#
+# risk_tier:  0 read-only, no side effects          -> auto
+#             1 read-only, may touch sensitive data  -> auto, output redacted
+#             2 reversible write                      -> human approval
+#             3 irreversible / destructive            -> human approval + two approvers (prod: denied by policy)
+# role_arn:   one IAM role per tool (least privilege). In local mode the tool runs with a fake client.
+# cost_usd:   fixed cost charged to the run's budget per invocation (API cost + a share of compute).
+
+tools:
+  cw_describe_alarms:
+    description: "List CloudWatch alarms in a given state."
+    risk_tier: 0
+    cost_usd: 0.0001
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-cw-describe-alarms"
+    timeout_seconds: 10
+    input_schema:
+      type: object
+      properties:
+        state: { type: string, enum: [ALARM, OK, INSUFFICIENT_DATA] }
+        name_prefix: { type: string, maxLength: 128 }
+      required: [state]
+      additionalProperties: false
+
+  cw_get_metric:
+    description: "Read a CloudWatch metric statistic for a resource over a window."
+    risk_tier: 0
+    cost_usd: 0.0001
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-cw-get-metric"
+    timeout_seconds: 10
+    input_schema:
+      type: object
+      properties:
+        namespace: { type: string }
+        metric_name: { type: string }
+        dimensions: { type: object, additionalProperties: { type: string } }
+        minutes: { type: integer, minimum: 1, maximum: 180 }
+        stat: { type: string, enum: [Average, Maximum, Sum, p99] }
+      required: [namespace, metric_name, dimensions]
+      additionalProperties: false
+
+  ecs_describe_service:
+    description: "Describe an ECS service: desired/running count, task definition, deployments."
+    risk_tier: 1
+    cost_usd: 0.0001
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-ecs-describe"
+    timeout_seconds: 10
+    input_schema:
+      type: object
+      properties:
+        cluster: { type: string }
+        service: { type: string }
+      required: [cluster, service]
+      additionalProperties: false
+
+  ecs_update_desired_count:
+    description: "Scale an ECS service to a new desired count. Reversible."
+    risk_tier: 2
+    cost_usd: 0.0005
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-ecs-scale"
+    timeout_seconds: 20
+    input_schema:
+      type: object
+      properties:
+        cluster: { type: string }
+        service: { type: string }
+        desired_count: { type: integer, minimum: 0, maximum: 20 }
+      required: [cluster, service, desired_count]
+      additionalProperties: false
+    constraints:
+      max_delta: 4          # policy denies a jump larger than this in one step
+
+  ecs_delete_service:
+    description: "Delete an ECS service. Irreversible."
+    risk_tier: 3
+    cost_usd: 0.0005
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-ecs-delete"
+    timeout_seconds: 20
+    input_schema:
+      type: object
+      properties:
+        cluster: { type: string }
+        service: { type: string }
+      required: [cluster, service]
+      additionalProperties: false
+
+  ce_get_cost:
+    description: "Cost Explorer: daily unblended cost for a service or tag over a date range."
+    risk_tier: 1
+    cost_usd: 0.01          # Cost Explorer API calls are billed
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-ce-get-cost"
+    timeout_seconds: 20
+    input_schema:
+      type: object
+      properties:
+        days: { type: integer, minimum: 1, maximum: 90 }
+        group_by: { type: string, enum: [SERVICE, TAG] }
+        tag_key: { type: string }
+      required: [days, group_by]
+      additionalProperties: false
+
+  kb_search:
+    description: "Search the tenant's knowledge base (Bedrock Knowledge Base on S3 Vectors)."
+    risk_tier: 1
+    cost_usd: 0.0005
+    role_arn: "arn:aws:iam::${account_id}:role/agentgate-${env}-tool-kb-search"
+    timeout_seconds: 15
+    input_schema:
+      type: object
+      properties:
+        query: { type: string, minLength: 3, maxLength: 1000 }
+        top_k: { type: integer, minimum: 1, maximum: 10 }
+      required: [query]
+      additionalProperties: false
+
+# Which tenant may see which tools. Policy (Cedar) decides allow/deny/approve per call;
+# this list only decides what appears in the agent's tool catalogue.
+grants:
+  ops-agent:       [cw_describe_alarms, cw_get_metric, ecs_describe_service, ecs_update_desired_count, ce_get_cost]
+  knowledge-agent: [kb_search]
+  cli:             [cw_describe_alarms, cw_get_metric, ecs_describe_service, ecs_update_desired_count, ecs_delete_service, ce_get_cost, kb_search]
+  evals:           [cw_describe_alarms, cw_get_metric, ecs_describe_service, ecs_update_desired_count, ce_get_cost, kb_search]
