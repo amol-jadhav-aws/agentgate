@@ -86,12 +86,12 @@ resource "aws_ecs_task_definition" "this" {
     operating_system_family = "LINUX"
   }
   container_definitions = jsonencode([{
-    name        = var.name
-    image       = var.image
-    command     = var.command
-    essential   = true
+    name         = var.name
+    image        = var.image
+    command      = var.command
+    essential    = true
     portMappings = [{ containerPort = var.port, protocol = "tcp" }]
-    environment = [for k, v in merge(var.environment, { PORT = tostring(var.port) }) : { name = k, value = v }]
+    environment  = [for k, v in merge(var.environment, { PORT = tostring(var.port) }) : { name = k, value = v }]
     logConfiguration = {
       logDriver = "awslogs"
       options   = { awslogs-group = aws_cloudwatch_log_group.this.name, awslogs-region = data.aws_region.current.name, awslogs-stream-prefix = "ecs" }

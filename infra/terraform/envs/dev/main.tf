@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.60"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
   # Uncomment after bootstrapping the state bucket and lock table (scripts in docs/runbook.md):
   # backend "s3" {
@@ -160,17 +164,17 @@ resource "aws_secretsmanager_secret_version" "keys" {
 # -------------------------------------------------------------------- services
 locals {
   common_env = {
-    AGENTGATE_MODE                  = "aws"
-    AGENTGATE_ENV_NAME              = local.env
-    AGENTGATE_AWS_REGION            = var.region
-    AGENTGATE_DYNAMODB_TABLE        = module.table.table_name
-    AGENTGATE_REDIS_URL             = module.redis.endpoint
-    AGENTGATE_CONFIG_DIR            = "/app/config"
-    AGENTGATE_POLICY_DIR            = "/app/policies"
-    AGENTGATE_GUARDRAIL_ID          = var.guardrail_id
-    AGENTGATE_KB_ID                 = var.knowledge_base_id
-    AGENTGATE_SECRETS_ID            = aws_secretsmanager_secret.keys.name
-    OTEL_EXPORTER_OTLP_ENDPOINT     = "" # CloudWatch via ADOT sidecar in prod; empty = no exporter
+    AGENTGATE_MODE              = "aws"
+    AGENTGATE_ENV_NAME          = local.env
+    AGENTGATE_AWS_REGION        = var.region
+    AGENTGATE_DYNAMODB_TABLE    = module.table.table_name
+    AGENTGATE_REDIS_URL         = module.redis.endpoint
+    AGENTGATE_CONFIG_DIR        = "/app/config"
+    AGENTGATE_POLICY_DIR        = "/app/policies"
+    AGENTGATE_GUARDRAIL_ID      = var.guardrail_id
+    AGENTGATE_KB_ID             = var.knowledge_base_id
+    AGENTGATE_SECRETS_ID        = aws_secretsmanager_secret.keys.name
+    OTEL_EXPORTER_OTLP_ENDPOINT = "" # CloudWatch via ADOT sidecar in prod; empty = no exporter
   }
 }
 
