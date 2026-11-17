@@ -16,6 +16,8 @@ env:
 
 jobs:
   deploy:
+    # Skipped until AWS is set up: add the repo variable AWS_DEPLOY_ROLE_ARN.
+    if: ${{ vars.AWS_DEPLOY_ROLE_ARN != '' }}
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref, 'refs/tags/') && 'prod' || 'dev' }}
     steps:
